@@ -1,5 +1,5 @@
-""" A reader for Coq script files. 
-    The parsing algorithm is rather naive: dot followed by whitespace 
+""" A reader for Coq script files.
+    The parsing algorithm is rather naive: dot followed by whitespace
     equals command. """
 
 # Author: Carst Tankink carst 'at' cs 'dot' ru 'dot' nl
@@ -16,7 +16,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Proof Camera.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -34,7 +34,7 @@ class CoqReader(Reader):
     self.unfinished = None
 
   def getComment(self, acc, open = 1):
-    char = self.readChar() 
+    char = self.readChar()
     while char != None and open > 0:
       acc = acc + char
       if char == "*":
@@ -49,7 +49,7 @@ class CoqReader(Reader):
         if char2 == "*":
           acc = acc + self.readChar()
           open += 1
-      char = self.readChar() 
+      char = self.readChar()
     return acc
 
   def terminator(self, char, open):
@@ -78,7 +78,7 @@ class CoqReader(Reader):
 
       char = self.readChar()
     return acc
-      
+
   def getCommand(self, acc = ""):
     char = self.readChar()
     while char != None:
@@ -90,12 +90,12 @@ class CoqReader(Reader):
           return self.getComment(acc)
         else:
           return self.getWord(acc)
-      
+
       elif char == '.' and self.peekChar() == '.':
         acc += self.readChar()
         return self.getWord(acc)
-        
-      elif not (char in string.whitespace): 
+
+      elif not (char in string.whitespace):
         return self.getWord(acc)
       char = self.readChar()
 
@@ -107,9 +107,9 @@ class CoqReader(Reader):
       acc = self.unfinished
     else:
       acc = ""
-    
+
     command = self.getCommand(acc = acc)
-    
+
     result = []
     while (len(command) != 0):
       if not (self.isCommand(command) or self.isComment(command)):
@@ -120,43 +120,42 @@ class CoqReader(Reader):
         self.unfinished = ""
         result.append(command)
         command = self.getCommand()
-    
+
     if self.unfinished:
       result.append(self.unfinished)
-    
+
     return result
 
   def isComment(self, text):
     """ Return whether the given text is a comment. """
     return len(text.split()) <= 0 or\
            text.split()[0].startswith("(*") and text.endswith("*)")
-  
+
   def isCommand(self, text):
     """ Return whether the given text is a Coq command. """
     text = text.rstrip()
     if text:
-      return self.terminator(text[len(text) - 1], 0)
-  
+      return self.terminator(text[-1], 0) and text[-2:] != '..'
+
   def make_frames(self, prover = None):
-    """ Splits the file stored in self.script into seperate commands, 
+    """ Splits the file stored in self.script into seperate commands,
         and pairs these commands to their responses as provided by prover.
 
         Arguments:
         - prover: The prover to send commands to.
     """
-    
+
     document = Movie()
     command = self.getCommand()
-    
+
     while command != None and len(command) != 0:
       if self.isComment(command):
         response = None
       else:
         response = prover.send(command)
-      
+
       id = 0
       document.addFrame(Frame(id, command, response))
       command = self.getCommand()
 
     return document
-
