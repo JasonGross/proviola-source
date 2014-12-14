@@ -60,6 +60,7 @@ class Coqdoc_Reader(CoqReader):
                     "&#8660;":  "<~~>",
                     "&#8866;":  "|-",
                     "&quot;":   '"',
+                    "&acute;":  "'",
                     }
     unicode_replacements = {u'\u2260':   u'<>',
                             u'\u22a2':   u'|-',
