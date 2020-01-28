@@ -49,9 +49,9 @@ class Coq_Local(object):
     """ Clean a string. """
     return "".join([c for c in string if ord(c) != 253])
 
-  def __del__(self):
-    """ Clean up: stop Coq process. """
-    self._coqtop.terminate()
+#  def __del__(self):
+#    """ Clean up: stop Coq process. """
+#    self._coqtop.terminate()
 
   def send(self, command):
     """ Send data to Coqtop, returning the result. """
